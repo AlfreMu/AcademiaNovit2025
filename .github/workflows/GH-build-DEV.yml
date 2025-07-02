@@ -1,0 +1,31 @@
+#Nombre del Pipeline
+
+name: GH-build-DEV
+
+#Eventos disparadores
+on: 
+  push:
+      branches: [ "main" ]
+
+jobs: 
+  build:
+#Ubuntu en la version que estamos usando
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+         dotnet-version: |
+            8.0.x  
+            9.0.x
+#Restaurar dependencias
+    - name: Restore dependencies 
+      run: dotnet restore 
+#Compilar el proyecto.
+    - name: Build
+      run: dotnet build --no-restore 
+#Ejecutar las pruebas
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
