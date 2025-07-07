@@ -9,23 +9,44 @@ on:
 
 jobs: 
   build:
-#Ubuntu en la version que estamos usando
+    #Ubuntu en la version que estamos usando
     runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4 
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
          dotnet-version: |
             8.0.x  
             9.0.x
-#Restaurar dependencias
+    #Restaurar dependencias
     - name: Restore dependencies 
       run: dotnet restore 
-#Compilar el proyecto.
+      
+    #Compilar el proyecto.
     - name: Build
       run: dotnet build --no-restore 
-#Ejecutar las pruebas
+      
+    #Ejecutar las pruebas.
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      
+    #Envia el mail.
+    - name: Send email
+      uses: dawidd6/action-send-mail@v6
+      with:
+        server_address: ${{ secrets.SMTP_HOST}}
+        server_port: ${{ secrets.SMTP_PORT}}
+        username: ${{ secrets.SMTP_USER }}
+        password: ${{ secrets.SMTP_PASS }}
+        subject: "Pipeline ejecutado correctamente - GH-build-DEV"
+        to: muniz.gonzalo1@gmail.com
+        from: ${{ secrets.SMTP_USER }}
+        body: |
+            El pipeline se ejecutó correctamente.
+            Repositorio: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Fecha: ${{ github.event.head_commit.timestamp }}
