@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  academia-db:
+    container_name: academia-db
+    image: postgres:17.5
+    environment:
+      POSTGRES_DB: datos
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: tivon1234
+    ports:
+      - "5432:5432"
+    networks:
+      - novit_net
+    restart: unless-stopped
+
+  academianovit:
+    container_name: academia-web-api
+    image: ghcr.io/alfremu/academianovit2025:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - academia-db
+    networks:
+      - novit_net
+    restart: unless-stopped
+    secrets:
+      - db_connection_string
+    environment:
+      DB_CONNECTION_STRING_FILE: /run/secrets/db_connection_string
+
+secrets:
+  db_connection_string:
+    file: ./secrets/db_connection_string.txt
+
+networks:
+  novit_net:
+    driver: bridge

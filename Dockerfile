@@ -6,7 +6,7 @@ WORKDIR /publish
 COPY ./AcademiaNovit/AcademiaNovit.csproj ./AcademiaNovit/
 RUN dotnet restore ./AcademiaNovit/AcademiaNovit.csproj
 
-# Copiamos todo el código fuente (solo el proyecto principal)
+# Copiamos todo el código fuente 
 COPY ./AcademiaNovit ./AcademiaNovit
 WORKDIR /publish/AcademiaNovit
 RUN dotnet publish -c Release -o /app/out
