@@ -97,4 +97,4 @@ networks:
 
 configs:
   nginx_config:
-    file: ./Nginx/nginx.conf
+    file: ./nginx.conf
