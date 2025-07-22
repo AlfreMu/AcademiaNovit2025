@@ -1,0 +1,35 @@
+name: GH-docker-deploy-DEV
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to GHCR
+      run: docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_TOKEN }}
+
+    - name: Pull latest image and retag as prod
+      run: |
+        docker pull ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:latest
+        docker tag ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:latest ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:prod
+        docker push ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:prod
+
+    - name: Connect via SSH and redeploy with Docker Compose
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd ~
+          docker compose pull
+          docker compose up -d
+
+          
