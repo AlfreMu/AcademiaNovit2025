@@ -11,6 +11,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-22.04
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -51,12 +52,15 @@ jobs:
             echo "Inicializando Swarm (si hace falta)"
             docker swarm init --advertise-addr $(hostname -I | awk '{print $1}') || true
 
+            echo "Seteando GITHUB_REPOSITORY en minúsculas"
+            GITHUB_REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+
             echo "Haciendo pull de la imagen"
-            docker pull ghcr.io/${{ github.repository }}:prod
+            docker pull ghcr.io/$GITHUB_REPOSITORY:prod
 
             echo "Haciendo deploy del stack"
             POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
             POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            GITHUB_REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]') \
+            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
             docker stack deploy -c docker-swarm.yml academianovit
