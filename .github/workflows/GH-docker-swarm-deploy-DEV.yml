@@ -1,0 +1,62 @@
+name: GH-docker-swarm-deploy-DEV
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DEPLOY_TAG: prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create remote directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: mkdir -p ~/academianovit-prod
+
+      - name: Copy files to VM
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key
+          chmod 600 /tmp/private_key
+
+          scp -i /tmp/private_key -P ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no \
+            docker-swarm.yml Nginx/nginx.conf \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/academianovit-prod/
+
+          rm /tmp/private_key
+
+      - name: Deploy with Docker Swarm
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/academianovit-prod
+
+            echo "Haciendo login a GHCR"
+            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+            echo "Inicializando Swarm (si hace falta)"
+            docker swarm init --advertise-addr $(hostname -I | awk '{print $1}') || true
+
+            echo "Haciendo pull de la imagen"
+            docker pull ghcr.io/${{ github.repository }}:prod
+
+            echo "Haciendo deploy del stack"
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            GITHUB_REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]') \
+            docker stack deploy -c docker-swarm.yml academianovit
