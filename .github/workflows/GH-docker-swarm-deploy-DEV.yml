@@ -53,14 +53,19 @@ jobs:
             docker swarm init --advertise-addr $(hostname -I | awk '{print $1}') || true
 
             echo "Seteando GITHUB_REPOSITORY en minúsculas"
-            GITHUB_REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
 
             echo "Haciendo pull de la imagen"
-            docker pull ghcr.io/${{ github.repository }}:prod
+            docker pull ghcr.io/$REPO:prod
+
+            echo "Creando secret de DB (forzado)"
+            docker secret rm db_connection_string || true
+            docker secret create db_connection_string ./db_connection_string.txt
 
             echo "Haciendo deploy del stack"
             POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
             POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
+            GITHUB_REPOSITORY=$REPO \
             docker stack deploy -c docker-swarm.yml academianovit
+
