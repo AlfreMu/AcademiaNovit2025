@@ -25,8 +25,8 @@ services:
       - novit_net
     restart: unless-stopped
     secrets:
-    db_connection_string:
-    file: ./db_connection_string.txt
+      db_connection_string:
+       file: ./db_connection_string.txt
 
 networks:
   novit_net:
