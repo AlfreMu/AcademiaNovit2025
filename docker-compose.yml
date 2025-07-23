@@ -31,7 +31,7 @@ services:
 
 secrets:
   db_connection_string:
-    file: ./secrets/db_connection_string.txt
+    file: ./db_connection_string.txt
 
 networks:
   novit_net:
