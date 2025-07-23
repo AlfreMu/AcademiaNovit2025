@@ -43,7 +43,8 @@ services:
     networks:
       - app_network
     secrets:
-      - db_connection_string
+      - source: db_connection_string
+        target: db_connection_string
     deploy:
       replicas: 5
       update_config:
@@ -101,7 +102,9 @@ networks:
 
 secrets:
   db_connection_string:
-    file: ./db_connection_string.txt  # Ruta al archivo de secreto en la VM
+    name: db_connection_string
+    file: ./db_connection_string.txt
+
 
 configs:
   nginx_config:
