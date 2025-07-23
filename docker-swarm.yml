@@ -34,12 +34,16 @@ services:
 
   api:
     image: ghcr.io/${GITHUB_REPOSITORY}:prod
+    depends_on:
+      - academia-db
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - DB_CONNECTION_STRING_FILE=/run/secrets/db_connection_string
     networks:
       - app_network
+    secrets:
+      - db_connection_string
     deploy:
       replicas: 5
       update_config:
@@ -94,6 +98,10 @@ networks:
   app_network:
     driver: overlay
     attachable: true
+
+secrets:
+  db_connection_string:
+    file: ./db_connection_string.txt  # Ruta al archivo de secreto en la VM
 
 configs:
   nginx_config:
