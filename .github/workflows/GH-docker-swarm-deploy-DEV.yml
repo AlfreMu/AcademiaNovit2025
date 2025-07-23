@@ -56,7 +56,7 @@ jobs:
             GITHUB_REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
 
             echo "Haciendo pull de la imagen"
-            docker pull ghcr.io/$GITHUB_REPOSITORY:prod
+            docker pull ghcr.io/${{ github.repository }}:prod
 
             echo "Haciendo deploy del stack"
             POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
