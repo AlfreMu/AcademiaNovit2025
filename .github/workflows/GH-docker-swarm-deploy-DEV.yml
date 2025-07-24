@@ -58,8 +58,15 @@ jobs:
             echo "Haciendo pull de la imagen"
             docker pull ghcr.io/$REPO:prod
 
-            echo "Creando secret de DB (forzado)"
+            echo "Eliminando stack existente (si existe)"
+            docker stack rm academianovit || true
+            echo "Esperando a que se elimine completamente..."
+            sleep 5
+
+            echo "Eliminando secret (si existe)"
             docker secret rm db_connection_string || true
+
+            echo "Creando nuevo secret"
             docker secret create db_connection_string ./db_connection_string.txt
 
             echo "Haciendo deploy del stack"
@@ -68,4 +75,3 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
             GITHUB_REPOSITORY=$REPO \
             docker stack deploy -c docker-swarm.yml academianovit
-
