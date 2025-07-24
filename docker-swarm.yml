@@ -59,26 +59,28 @@ services:
           memory: 128M
 
   nginx:
-    image: nginx:1.25.5-alpine
-    ports:
-      - "80:80"
-      - "8080:8080"
-    networks:
-      - app_network
-    configs:
-      - source: nginx_config
-        target: /etc/nginx/nginx.conf
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 128M
+  image: nginx:1.25.5-alpine
+  ports:
+    - "80:80"
+    - "8080:8080"
+  networks:
+    - app_network
+  configs:
+    - source: nginx_config
+      target: /etc/nginx/nginx.conf
+  depends_on:
+    - api
+  deploy:
+    replicas: 1
+    placement:
+      constraints: [node.role == manager]
+    restart_policy:
+      condition: on-failure
+      delay: 10s
+      max_attempts: 3
+    resources:
+      limits:
+        memory: 128M
 
 volumes:
   postgres_data:
