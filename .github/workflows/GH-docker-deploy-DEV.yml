@@ -14,7 +14,7 @@ jobs:
     - name: Login to GHCR
       run: docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_TOKEN }}
 
-    - name: Pull latest image and retag as prod
+    - name: Pull latest image and retag as prod.
       run: |
         docker pull ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:latest
         docker tag ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:latest ghcr.io/${{ secrets.REGISTRY_USERNAME }}/academianovit2025:prod
