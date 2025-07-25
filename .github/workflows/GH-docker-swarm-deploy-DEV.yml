@@ -62,7 +62,10 @@ jobs:
             echo "Eliminando stack existente (si existe)"
             docker stack rm academianovit || true
             echo "Esperando a que se elimine completamente..."
-            sleep 5
+            sleep 6
+
+            echo "Recreando red overlay app_network"
+            docker network create --driver overlay --attachable app_network || true
 
             echo "Eliminando secret (si existe)"
             docker secret rm db_connection_string || true
